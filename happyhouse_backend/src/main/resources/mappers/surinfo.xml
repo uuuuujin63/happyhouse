@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.happyhouse.vue.model.mapper.HouseMapMapper">
+
+	<select id="getStores" parameterType="map" resultType="StoreDto">
+		select storeName, storeType, addr, lon, lat
+		from storeinfo
+		where #{lng}-0.0015 &lt;= lon and lon &lt;= #{lng}+0.0015 and #{lat}-0.0015 &lt;= lat and lat &lt;= #{lat}+0.0015
+	</select>
+
+
+	<select id="getCareCenter" parameterType="map"
+		resultType="CareCenterDto">
+		select sidoName, gugunName, centerName, addr, hourWeek, hourSat, hourHol, phoneNum
+		from carecenterinfo
+		where gugunName = #{gugunName}
+	</select>
+
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.happyhouse.vue.model.mapper.NoticeMapper">
+
+	<resultMap type="NoticeDto" id="notice">
+		<result column="idx" property="idx" />
+		<result column="iduser" property="userid" />
+		<result column="title" property="title" />
+		<result column="content" property="content" />
+		<result column="regitime" property="regitime" />
+	</resultMap>
+
+	<sql id="search">
+		<if test="key != null and key != ''">
+				where title like concat('%', #{key}, '%')
+		</if>
+	</sql>
+
+	<select id="listNotice" parameterType="String" resultMap="notice">
+		select idx, iduser, title, content, regitime
+		from notice
+		<include refid="search"></include>
+		order by idx desc
+	</select>
+	
+	<insert id="registerNotice" parameterType="NoticeDto">
+		insert into notice(iduser, title, content) 
+		values(#{userid}, #{title}, #{content})
+	</insert>
+	
+	<select id="detailNotice" parameterType="NoticeDto" resultMap="notice">
+		select idx, iduser, title, content, regitime
+		from notice
+		where idx = #{idx}
+	</select>
+
+	<update id="updateNotice" parameterType="NoticeDto">
+		update notice
+		set title = #{title}, content = #{content} 
+		where idx = #{idx}
+	</update>
+	
+	<delete id="removeNotice" parameterType="NoticeDto">
+		delete from notice
+		where idx = #{idx}
+	</delete>
+
+</mapper>

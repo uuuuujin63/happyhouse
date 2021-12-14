@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.happyhouse.vue.model.mapper.CommunityMapper">
+
+	<resultMap type="CommunityDto" id="community">
+		<result column="no" property="no" />
+		<result column="idx" property="idx" />
+		<result column="iduser" property="userid" />
+		<result column="title" property="title" />
+		<result column="content" property="content" />
+		<result column="regitime" property="regitime" />
+		<collection property="Reply" column="idx" javaType="list" ofType="CommunityReplyDto" select="getReply"/>
+	</resultMap>
+
+	<sql id="search">
+		<if test="key != null and key != ''">
+				and title like concat('%', #{key}, '%')
+		</if>
+	</sql>
+	<select id="getCommunity" parameterType="String" resultMap="community">
+		select *
+		from community
+		where idx=#{idx}
+	</select>
+	
+	<select id="listCommunity" parameterType="map" resultMap="community">
+		select idx, iduser, title, content,regitime
+		from community
+		where iduser in (select iduser from user where addr=#{addr})
+		<include refid="search"></include>
+		order by idx desc
+	</select>
+	
+	<select id="getDongName" parameterType="String" resultType="String">
+		select dongName
+		from dongcode
+		where dongCode=#{dongCode}
+	</select>
+	
+	<!-- 하나의 글에 해당하는 모든 댓글들 모으는 select -->
+	<select id="getReply" parameterType="int" resultType="CommunityReplyDto">
+		select *
+		from cummunityReply
+		where idx=#{idx}
+		order by regitime desc
+	</select>
+	
+	<insert id="registerCommunity" parameterType="CommunityDto">
+		insert into community(iduser, title, content) 
+		values(#{userid}, #{title}, #{content})
+	</insert>
+	
+	<insert id="registerReply" parameterType="CommunityReplyDto">
+		insert into cummunityReply(iduser, idx, content)
+		values(#{iduser}, #{idx}, #{content})
+	</insert>
+	
+	<select id="detailCommunity" parameterType="CommunityDto" resultMap="community">
+		select idx, iduser, title, content, regitime
+		from community
+		where idx = #{idx}
+	</select>
+
+	<update id="updateCommunity" parameterType="CommunityDto">
+		update community
+		set title = #{title}, content = #{content} 
+		where idx = #{idx}
+	</update>
+	
+	<delete id="removeCommunity" parameterType="CommunityDto">
+		delete from community
+		where idx = #{idx}
+	</delete>
+	
+	<delete id="removeReply" parameterType="int">
+		delete from cummunityReply
+		where no = #{no}
+	</delete>
+</mapper>

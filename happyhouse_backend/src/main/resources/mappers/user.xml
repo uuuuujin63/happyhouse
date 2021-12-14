@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.happyhouse.vue.model.mapper.UserMapper">
+	
+	<resultMap type="UserDto" id="user">
+		<result column="iduser" property="userid"/>
+		<result column="name" property="name"/>
+		<result column="password" property="password"/>
+		<result column="addr" property="addr"/>
+		<result column="sidoAddr" property="sidoAddr"/>
+		<result column="gugunAddr" property="gugunAddr"/>
+		<result column="admin" property="admin"/>
+		<result column="addrcert" property="addrcert"/>
+		<collection property="userInterest" column="iduser" javaType="list" ofType="UserInterestDto" select="mypageDong"/>
+	</resultMap>
+	
+	<select id="login" parameterType="UserDto" resultMap="user">
+		select u.iduser, u.name, count(a.iduser) 'admin', addrcert
+		from user u left join admin a
+		on u.iduser = a.iduser
+		where u.iduser = #{userid} and u.password = #{password} 
+	</select>
+	
+	<select id="getUserPwd" parameterType="UserDto" resultMap="user">
+		select password
+		from user
+		where iduser = #{userid} and findpwdkey = #{findpwdkey} 
+	</select>
+	
+	<insert id="registerMember" parameterType="UserDto">
+		insert into user (iduser, password, name, sidoAddr, gugunAddr, addr, findpwdkey)
+		values (#{userid},  #{password},  #{name},   #{sidoAddr},  #{gugunAddr}, #{addr}, #{findpwdkey})
+	</insert>
+	
+	<update id="updateUser" parameterType="UserDto">
+		update user
+		set password = #{password}, name = #{name}, addr = #{addr}, sidoAddr = #{sidoAddr}, gugunAddr = #{gugunAddr}
+		where iduser = #{userid}
+	</update>
+	
+	<delete id="removeInUser" parameterType="String">
+		delete from userinterest
+		where iduser = #{userid}
+	</delete>
+	
+	<delete id="removeUser" parameterType="String">
+		delete from user
+		where iduser = #{userid}
+	</delete>
+	<delete id="removeAdmin" parameterType="String">
+		delete from admin
+		where iduser = #{userid}
+	</delete>
+	<delete id="removeNotice" parameterType="String">
+		delete from notice
+		where iduser = #{userid}
+	</delete>
+	<delete id="removeCommunity" parameterType="String">
+		delete from community
+		where iduser = #{userid}
+	</delete>
+	<delete id="removeReply" parameterType="String">
+		delete from communityreply
+		where iduser = #{userid}
+	</delete>
+	<delete id="removeQanda" parameterType="String">
+		delete from qanda
+		where iduser = #{userid}
+	</delete>
+	
+	<!-- 마이페이지 화면 :유저정보를 get 해오는 것 -->
+	<select id="mypageUser" parameterType="String" resultMap="user">
+		select u.iduser, u.name, u.password, u.addr, u.sidoAddr, u.gugunAddr, count(a.iduser) 'admin', addrcert
+		from user u left join admin a
+        on u.iduser = a.iduser
+		where u.iduser = #{userid}
+	</select>
+	
+	<!-- 마이페이지 화면 : 유저의 관심지역 정보를 get 해오는 것 -->
+	<select id="mypageDong" parameterType="String" resultType="UserInterestDto">
+		select dongName, dongCode
+		from dongcode
+		where dongCode in ( select dongCode
+							from userinterest
+							where iduser = #{userid} )
+	</select>
+	
+	<insert id="uploadAuthFile" parameterType="FileInfoDto">
+		insert into file_info (savefolder, originfile, savefile)
+		values (#{saveFolder}, #{originFile}, #{saveFile})
+	</insert>
+	
+</mapper>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.happyhouse.vue.model.mapper.HouseMapMapper">
+	
+	<select id="getSido" resultType="SidoGugunCodeDto">
+		select left(sidoCode,2) sidoCode, sidoName
+		from sidocode
+		order by sidoCode
+	</select>
+	
+	<select id="getGugunInSido" parameterType="String" resultType="SidoGugunCodeDto">
+		select left(gugunCode,5) gugunCode, gugunName
+		from guguncode 
+		where left(gugunCode,2) = #{sido}
+		order by gugunCode
+	</select>
+	
+	<select id="getDongInGugun" parameterType="String" resultType="HouseInfoDto">
+		select distinct dongName, dongCode
+		from houseinfo
+		where left(dongCode, 5) = #{gugun}
+		order by dongName
+	</select>
+	
+	<select id="getAptInDong" parameterType="map" resultType="HouseInfoDto">
+		select h.aptCode, h.aptName, h.buildyear, h.dongCode, h.dongName, h.jibun, h.lat, h.lng, si.sidoname sidoName, gu.gugunname gugunName 
+		from houseinfo h 
+		left join sidocode si 
+		on left(h.dongcode,2) = left(si.sidocode,2)
+		left join guguncode gu
+		on left(h.dongcode,5) = left(gu.guguncode,5)
+		where #{swLng} &lt;= h.lng and h.lng &lt;= #{neLng} and #{swLat} &lt;= h.lat and h.lat &lt;= #{neLat}
+		order by aptName
+	</select>
+	
+	<insert id="addInterest" parameterType="map">
+		insert into userinterest (dongcode, iduser)
+		values (#{dongcode}, #{userid})
+	</insert>
+	
+	<select id="getRecentPrice" parameterType="int" resultType="String">
+		select NH.dealAmount
+		from (select * from housedeal order by aptCode, dealYear desc, dealMonth desc, dealday desc) AS NH
+		where NH.aptCode =  #{aptcode}
+		limit 1
+	</select>
+	
+	<select id="getBaseLatLng" parameterType="String" resultType="map">
+		select lat, lng 
+		from baseaddress
+		where dongCode = #{dongCode}
+	</select>
+	
+	<update id="countVisited" parameterType="int">
+		update houseinfo 
+		set visited  = visited + 1
+		where aptCode = #{aptCode}
+	</update>
+	
+	<select id="getMostVisited" resultType="HouseInfoDto">
+		select * from houseinfo
+		where visited != 0
+		order by visited desc
+		limit 10
+	</select>
+	
+</mapper>
